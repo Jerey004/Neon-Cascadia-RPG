@@ -326,7 +326,33 @@ def show_levelup_menu(player):
                 SKILL_DEFINITIONS.get(skill, {}).get("desc", "")[:50],
             )
         console.print(skill_table)
-
+        
+def print_help():
+    table = Table(title="COMMANDS", box=box.SIMPLE_HEAVY, border_style="cyan")
+    table.add_column("Command", style="cyan")
+    table.add_column("Description", style="white")
+    cmds = [
+        ("go <dir>", "Move north/south/east/west/up/down"),
+        ("look", "Re-examine surroundings"),
+        ("take <item>", "Pick up an item"),
+        ("inv", "Show inventory"),
+        ("stats / char", "Full character sheet"),
+        ("skills", "Show skill levels"),
+        ("levelup", "Spend stat/skill points"),
+        ("equip <item>", "Equip weapon or armor"),
+        ("use <item>", "Use consumable or cyberware"),
+        ("quests / journal", "View quest log"),
+        ("accept", "Accept pending quest"),
+        ("decline", "Decline pending quest"),
+        ("save", "Save game"),
+        ("load", "Load game"),
+        ("help", "Show this help"),
+        ("quit", "Exit"),
+        ("anything else", "Sent to AI"),
+    ]
+    for c, d in cmds:
+        table.add_row(c, d)
+    console.print(table)
 
 def get_input(prompt: str = ">") -> str:
     return console.input("\n[bold yellow]" + prompt + "[/bold yellow] ").strip()
