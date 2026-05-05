@@ -101,10 +101,18 @@ def parse_response(text: str) -> dict:
         result["combat_start"] = enemy
         text = text.replace(m.group(0), "")
 
+    # Strict format: [QUEST_OFFER: title | description]
     m = re.search(r"\[QUEST_OFFER:\s*([^|\]]+)\|([^\]]+)\]", text, re.IGNORECASE)
     if m:
         result["quest_offer"] = (m.group(1).strip(), m.group(2).strip())
         text = text.replace(m.group(0), "")
+    else:
+        # Loose fallback: [QUEST_OFFER: title] with no pipe separator
+        m = re.search(r"\[QUEST_OFFER:\s*([^\]]+)\]", text, re.IGNORECASE)
+        if m:
+            title = m.group(1).strip()
+            result["quest_offer"] = (title, "Objective unknown - ask for details.")
+            text = text.replace(m.group(0), "")
 
     for m in re.finditer(r"\[ITEM_GAIN:\s*([^\]]+)\]", text, re.IGNORECASE):
         result["item_gains"].append(m.group(1).strip().lower().replace(" ", "_"))

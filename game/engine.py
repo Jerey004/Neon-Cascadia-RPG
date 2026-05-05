@@ -120,6 +120,9 @@ class GameEngine:
         ui.print_status(self.player)
         location = WORLD[self.player.location]
         ui.print_location(location, self.player)
+        # Show pending quest banner if one is waiting
+        if self.player.pending_quest:
+            ui.print_pending_quest(self.player.pending_quest)
 
     # ============== INPUT DISPATCH ==============
 
@@ -136,7 +139,7 @@ class GameEngine:
             pass
         elif verb in ("inv", "inventory", "i"):
             self._cmd_inventory()
-        elif verb == "stats":
+        elif verb in ("stats", "char", "character", "sheet"):
             self._cmd_stats()
         elif verb == "skills":
             self._cmd_skills()
@@ -148,8 +151,12 @@ class GameEngine:
             self._cmd_equip(args)
         elif verb == "use":
             self._cmd_use(args)
-        elif verb == "quests":
+        elif verb in ("quests", "journal", "log"):
             self._cmd_quests()
+        elif verb in ("accept", "yes") and self.player.pending_quest:
+            self._cmd_accept_quest()
+        elif verb in ("decline", "refuse", "reject", "no") and self.player.pending_quest:
+            self._cmd_decline_quest()
         elif verb == "save":
             self._cmd_save()
         elif verb == "load":
@@ -313,6 +320,31 @@ class GameEngine:
         ui.print_quests(self.player)
         ui.pause()
 
+    def _cmd_accept_quest(self):
+        q = self.player.pending_quest
+        if not q:
+            ui.warn("No pending quest to accept.")
+            ui.pause()
+            return
+        self.player.add_quest(q[0], q[1])
+        self.player.pending_quest = None
+        xp_events = self.player.gain_xp(XP_REWARDS["first_time_action"])
+        ui.success("Quest accepted: " + q[0])
+        for e in xp_events:
+            ui.success(e)
+        self.player.save()
+        ui.pause()
+
+    def _cmd_decline_quest(self):
+        q = self.player.pending_quest
+        if not q:
+            ui.warn("No pending quest to decline.")
+            ui.pause()
+            return
+        self.player.pending_quest = None
+        ui.warn("You declined: " + q[0])
+        ui.pause()
+
     def _cmd_save(self):
         path = self.player.save()
         ui.success("Saved to " + path)
@@ -425,10 +457,9 @@ class GameEngine:
 
         q = parsed.get("quest_offer")
         if q:
-            self.player.add_quest(q[0], q[1])
-            msgs.append("NEW QUEST: " + q[0])
-            xp_events = self.player.gain_xp(XP_REWARDS["first_time_action"])
-            msgs.extend(xp_events)
+            self.player.pending_quest = q
+            msgs.append("[QUEST OFFERED: " + q[0] + "]")
+            msgs.append("Type 'accept' to take it or 'decline' to refuse.")
 
         return msgs
 

@@ -58,6 +58,7 @@ class Player:
 
         # Quests
         self.quests = []
+        self.pending_quest = None  # Quest offered but not yet accepted/declined
 
         # Faction reputation
         self.reputation = {
@@ -357,6 +358,7 @@ class Player:
             "equipped": self.equipped,
             "cyberware": self.cyberware,
             "quests": self.quests,
+            "pending_quest": self.pending_quest,
             "reputation": self.reputation,
             "history": self.history,
             "visited": list(self.visited),
@@ -386,6 +388,7 @@ class Player:
         p.equipped = data.get("equipped", {"weapon": None, "armor": None})
         p.cyberware = data.get("cyberware", [])
         p.quests = data.get("quests", [])
+        p.pending_quest = data.get("pending_quest", None)
         p.reputation = data.get("reputation", {})
         p.history = data.get("history", [])
         p.visited = set(data.get("visited", ["slums"]))

@@ -220,7 +220,15 @@ def print_combat_log(messages: list):
             console.print("[white]> " + msg + "[/white]")
 
 
-def print_help():
+def print_pending_quest(quest: tuple):
+    """Show a banner for a quest waiting for accept/decline."""
+    title, desc = quest
+    text = (
+        "[bold yellow]>> QUEST OFFERED: " + title + "[/bold yellow]\n"
+        "[dim]" + desc + "[/dim]\n\n"
+        "[cyan]accept[/cyan]  to take it    [red]decline[/red]  to refuse"
+    )
+    console.print(Panel(text, border_style="yellow", box=box.HEAVY, padding=(0, 1)))
     table = Table(title="COMMANDS", box=box.SIMPLE_HEAVY, border_style="cyan")
     table.add_column("Command", style="cyan")
     table.add_column("Description", style="white")
@@ -228,17 +236,19 @@ def print_help():
         ("go <dir>", "Move (north/south/east/west/up/down)"),
         ("look", "Re-examine surroundings"),
         ("take <item>", "Pick up an item"),
-        ("inv", "Show inventory"),
-        ("stats", "Full character sheet"),
-        ("skills", "Show skill list"),
-        ("levelup", "Spend stat/skill points"),
+        ("inv / inventory", "Show inventory"),
+        ("stats / char", "Full character sheet with all stats"),
+        ("skills", "Show all skills with levels"),
+        ("levelup", "Spend stat/skill points after leveling"),
         ("equip <item>", "Equip a weapon or armor"),
         ("use <item>", "Use consumable / install cyberware"),
-        ("quests", "View active quests"),
+        ("quests / journal", "View active quest log"),
+        ("accept", "Accept a pending quest offer"),
+        ("decline", "Decline a pending quest offer"),
         ("save", "Save game"),
         ("load", "Load saved game"),
         ("help", "Show this help"),
-        ("quit", "Exit"),
+        ("quit", "Exit (offers save)"),
         ("anything else", "Sent to AI - talk, hack, search, attack..."),
     ]
     for c, d in cmds:
