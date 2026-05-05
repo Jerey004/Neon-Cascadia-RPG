@@ -7,7 +7,7 @@ Add this file to .gitignore if you don't want to commit your IP.
 # ============================================================
 # OLLAMA / TAILSCALE
 # ============================================================
-OLLAMA_HOST = "http://100.64.0.1:11434"  # <-- CHANGE THIS to your Tailscale IP
+OLLAMA_HOST = "http://100.xxx.xx.x:11434"  # <-- CHANGE THIS to your Tailscale IP
 OLLAMA_MODEL = "llama3"                   # or mistral, qwen, phi3, etc.
 OLLAMA_TIMEOUT = 45                       # seconds
 
