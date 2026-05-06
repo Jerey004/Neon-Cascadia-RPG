@@ -19,7 +19,7 @@ WORLD = {
                        "scrape by selling stolen data. The neon glow paints everything sick green.",
         "exits": {"north": "neon_market", "east": "clinic", "south": "alley_network", "down": "sewers"},
         "npcs": ["Old Marta (food vendor)", "Street Kid Riku"],
-        "items": ["crowbar", "ration_pack"],
+        "items": ["rusty_pipe", "ration_pack", "gang_tattoo_kit"],
         "shops": ["Old Marta"],
         "danger": 1,
         "district": "Slums",
@@ -31,7 +31,7 @@ WORLD = {
                        "Something scuttles in the dark. You smell copper and rot.",
         "exits": {"north": "slums", "east": "abandoned_arcade", "west": "factory_ruins"},
         "npcs": ["Hooded Figure"],
-        "items": ["rusty_pipe"],
+        "items": ["combat_knife", "cheap_painkillers"],
         "shops": [],
         "danger": 3,
         "district": "Slums",
@@ -43,7 +43,7 @@ WORLD = {
                        "antiseptic fights with old blood. Patients wait on plastic chairs.",
         "exits": {"west": "slums"},
         "npcs": ["Doc Sato (ripperdoc)", "Wounded Patient"],
-        "items": [],
+        "items": ["nano_bandages"],
         "shops": ["Doc Sato"],
         "danger": 0,
         "district": "Slums",
@@ -55,21 +55,19 @@ WORLD = {
                        "Distant echoes suggest you are not alone down here.",
         "exits": {"up": "slums", "north": "underground_lab", "east": "sewer_chokepoint"},
         "npcs": [],
-        "items": ["transit_card"],
+        "items": ["sewer_map", "scrap_metal"],
         "shops": [],
         "danger": 4,
         "district": "Underground",
         "enemies": ["mutant_rat", "scavenger", "rogue_drone"],
     },
-
-    # ============== MARKET / COMMERCIAL ==============
     "neon_market": {
         "name": "Neon Dragon Market",
         "description": "A labyrinth of stalls. Black-market implants, stolen data, synth-noodles. "
                        "Everyone is selling, everyone is watching. Cameras hum overhead.",
         "exits": {"north": "undercity_rail", "east": "corpo_plaza", "south": "slums", "west": "back_alley"},
         "npcs": ["Zhen the Ripperdoc", "Information Broker", "Synth Noodle Cook"],
-        "items": ["stim_pack", "smokes"],
+        "items": ["smokes", "credstick"],
         "shops": ["Zhen", "Information Broker", "Synth Noodle Cook"],
         "danger": 2,
         "district": "Market",
@@ -81,7 +79,7 @@ WORLD = {
                        "A flickering sign reads CLOSED. The door is unlocked.",
         "exits": {"east": "neon_market", "north": "fixer_office"},
         "npcs": ["Suspicious Vendor"],
-        "items": ["leather_jacket"],
+        "items": ["sawn_off", "corpo_id_card"],
         "shops": ["Suspicious Vendor"],
         "danger": 2,
         "district": "Market",
@@ -99,29 +97,25 @@ WORLD = {
         "district": "Market",
         "enemies": [],
     },
-
-    # ============== TRANSIT ==============
     "undercity_rail": {
         "name": "Undercity Rail Station",
         "description": "An abandoned mag-rail hub. Gangers use it as neutral ground. "
                        "Ozone, blood, and someone's bad cologne hang in the recycled air.",
         "exits": {"south": "neon_market", "west": "factory_ruins", "east": "hacker_den", "north": "corpo_plaza"},
         "npcs": ["Rail Rat Smuggler", "Drunk Conductor"],
-        "items": [],
+        "items": ["transit_card", "military_rations"],
         "shops": ["Rail Rat Smuggler"],
         "danger": 3,
         "district": "Transit",
         "enemies": ["rail_ganger", "rogue_drone"],
     },
-
-    # ============== FACTORY / INDUSTRIAL ==============
     "factory_ruins": {
         "name": "Old Kazumi Factory",
         "description": "Skeleton of an old assembly plant. Robots still patrol on broken routines. "
                        "Useful parts buried under rubble - if you don't get crushed.",
         "exits": {"east": "undercity_rail", "south": "alley_network", "north": "robot_pit"},
         "npcs": ["Scrap Boss"],
-        "items": ["rusty_pipe", "ration_pack"],
+        "items": ["scrap_metal", "wrench", "exo_gauntlet"],
         "shops": ["Scrap Boss"],
         "danger": 4,
         "district": "Industrial",
@@ -133,7 +127,7 @@ WORLD = {
                        "of metal. Some of them shouldn't be glowing at all.",
         "exits": {"south": "factory_ruins"},
         "npcs": [],
-        "items": ["smartgun"],
+        "items": ["emp_grenade", "overclock_chip"],
         "shops": [],
         "danger": 5,
         "district": "Industrial",
@@ -145,21 +139,19 @@ WORLD = {
                        "playing ghost games to no one. Music loops from a busted speaker.",
         "exits": {"west": "alley_network"},
         "npcs": ["Arcade Squatter", "Dealer"],
-        "items": ["virus_chip"],
+        "items": ["blackwire_sample", "virus_chip"],
         "shops": ["Dealer"],
         "danger": 2,
         "district": "Slums",
         "enemies": ["junkie", "alley_ganger"],
     },
-
-    # ============== HACKER / NET ==============
     "hacker_den": {
         "name": "The Null Pointer",
         "description": "Underground hacker collective. Every surface is a screen. The air buzzes "
                        "with overclocked rigs. Trust is currency. Names are weapons.",
         "exits": {"west": "undercity_rail", "down": "underground_lab"},
         "npcs": ["Ghost (netrunner)", "Cipher", "Static (sysop)"],
-        "items": ["data_shard"],
+        "items": ["data_shard", "encrypted_comms"],
         "shops": ["Cipher"],
         "danger": 1,
         "district": "Net",
@@ -171,7 +163,7 @@ WORLD = {
                        "Tanks of green fluid. Something inside one of them moves.",
         "exits": {"up": "hacker_den", "south": "sewers"},
         "npcs": ["Dr. Vance (reclusive scientist)"],
-        "items": ["reflex_booster", "cyber_eye"],
+        "items": ["ghost_overlay", "nanite_welder"],
         "shops": ["Dr. Vance"],
         "danger": 2,
         "district": "Net",
@@ -183,21 +175,19 @@ WORLD = {
                        "warns of what hunts here. The water moves wrong.",
         "exits": {"west": "sewers"},
         "npcs": [],
-        "items": ["monoblade"],
+        "items": ["monoblade", "surge_capsule"],
         "shops": [],
         "danger": 5,
         "district": "Underground",
         "enemies": ["sewer_horror", "mutant_rat", "scavenger"],
     },
-
-    # ============== CORPO ==============
     "corpo_plaza": {
         "name": "OmniCorp Plaza",
         "description": "Gleaming towers of glass and surveillance. Polished concrete. Suits move "
                        "with purpose. Security drones patrol endlessly. You don't belong here.",
         "exits": {"west": "neon_market", "south": "undercity_rail", "north": "executive_tower"},
         "npcs": ["OmniCorp Guard", "Street Preacher", "Corporate Suit"],
-        "items": [],
+        "items": ["corpo_id_card", "encrypted_drive"],
         "shops": [],
         "danger": 4,
         "district": "Corpo",
@@ -209,12 +199,11 @@ WORLD = {
                        "The elevator requires biometric clearance. This is the lion's den.",
         "exits": {"south": "corpo_plaza"},
         "npcs": ["Executive Receptionist", "Tower Guard"],
-        "items": [],
+        "items": ["corpo_override_chip"],
         "shops": [],
         "danger": 5,
         "district": "Corpo",
         "enemies": ["corpo_security", "elite_guard"],
     },
 }
-
 START_LOCATION = "slums"

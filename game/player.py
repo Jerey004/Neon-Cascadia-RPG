@@ -47,10 +47,13 @@ class Player:
         # Inventory
         self.inventory = []
 
-        # Equipment
+        # Equipment - weapon + 4 armor slots
         self.equipped = {
             "weapon": None,
-            "armor": None,
+            "head": None,
+            "body": None,
+            "hands": None,
+            "feet": None,
         }
 
         # Cyberware
@@ -69,12 +72,40 @@ class Player:
             "police": 0,
         }
 
+        # Per-NPC relationships (separate from faction rep)
+        self.npc_relationships = {}
+
+        # Corpses available for looting at current location
+        self.corpses = {}
+
         # AI history
         self.history = []
 
         # Exploration
         self.visited = {"slums"}
         self.looted_locations = set()
+        self.first_shop_opened = False
+
+        # Status effects (combat & exploration)
+        self.status_effects = []
+
+        # Active companion
+        self.companion = None
+
+        # Journal
+        from game.journal import Journal
+        self.journal = Journal()
+
+        # NPC memory
+        from game.npc_memory import NPCMemory
+        self.npc_memory = NPCMemory()
+
+        # Day/night cycle
+        from game.time_cycle import DayCycle
+        self.time = DayCycle()
+
+        # Turn counter (for time_cycle)
+        self.turn_count = 0
 
         # Combat state
         self.in_combat = False
@@ -121,7 +152,10 @@ class Player:
         if starting_weapon and starting_weapon in self.inventory:
             self.equipped["weapon"] = starting_weapon
         if starting_armor and starting_armor in self.inventory:
-            self.equipped["armor"] = starting_armor
+            armor_item = get_item(starting_armor)
+            if armor_item:
+                slot = armor_item.get("slot", "body")
+                self.equipped[slot] = starting_armor
 
         # Reputation
         for faction, val in cls.get("starting_rep", {}).items():
@@ -189,13 +223,22 @@ class Player:
         if not item:
             return "Unknown item."
 
-        slot = item["type"]
-        if slot not in ("weapon", "armor"):
+        if item["type"] == "weapon":
+            slot = "weapon"
+        elif item["type"] == "armor":
+            slot = item.get("slot", "body")
+        else:
             return "You can't equip that."
+
+        # Check requirements
+        from game.items import can_equip
+        ok, reason = can_equip(self, item_id)
+        if not ok:
+            return "Cannot equip: " + reason
 
         old = self.equipped.get(slot)
         self.equipped[slot] = item_id
-        msg = "Equipped " + item_display_name(item_id)
+        msg = "Equipped " + item_display_name(item_id) + " (" + slot + ")"
         if old:
             msg += " (was " + item_display_name(old) + ")"
         return msg
@@ -227,11 +270,12 @@ class Player:
 
     def get_defense(self) -> int:
         d = self.stats["defense"]
-        armor = self.equipped.get("armor")
-        if armor:
-            item = get_item(armor)
-            if item:
-                d += item.get("defense", 0)
+        for slot in ("head", "body", "hands", "feet"):
+            armor_id = self.equipped.get(slot)
+            if armor_id:
+                item = get_item(armor_id)
+                if item:
+                    d += item.get("defense", 0)
         return d
 
     def get_hit_chance_bonus(self) -> float:
@@ -264,6 +308,50 @@ class Player:
     def adjust_reputation(self, faction: str, delta: int):
         if faction in self.reputation:
             self.reputation[faction] = max(-100, min(100, self.reputation[faction] + delta))
+
+    def adjust_npc_rel(self, npc_name: str, delta: int):
+        """Change relationship with a specific NPC."""
+        current = self.npc_relationships.get(npc_name, 0)
+        new_val = max(-100, min(100, current + delta))
+        self.npc_relationships[npc_name] = new_val
+        return new_val
+
+    def get_npc_rel(self, npc_name: str) -> int:
+        return self.npc_relationships.get(npc_name, 0)
+
+    def add_corpse(self, location: str, name: str, credits: int, items: list):
+        """Drop a corpse at a location with loot to be searched."""
+        if location not in self.corpses:
+            self.corpses[location] = []
+        self.corpses[location].append({
+            "name": name,
+            "credits": credits,
+            "items": list(items),
+            "looted": False,
+        })
+
+    def get_corpses_at(self, location: str) -> list:
+        """Return list of corpses at the given location (only un-looted shown to player)."""
+        return self.corpses.get(location, [])
+
+    def loot_corpse(self, location: str, index: int) -> dict:
+        """Loot a corpse by index. Returns {credits: int, items: [str]} or None.
+        Empties the corpse but leaves it in the list so it stays visible."""
+        corpses = self.corpses.get(location, [])
+        if index < 0 or index >= len(corpses):
+            return None
+        corpse = corpses[index]
+        if corpse["looted"]:
+            return None
+        loot = {"credits": corpse["credits"], "items": list(corpse["items"])}
+        # Apply
+        self.credits += corpse["credits"]
+        for item_id in corpse["items"]:
+            self.inventory.append(item_id)
+        corpse["credits"] = 0
+        corpse["items"] = []
+        corpse["looted"] = True
+        return loot
 
     # ============== QUESTS ==============
 
@@ -360,13 +448,27 @@ class Player:
             "quests": self.quests,
             "pending_quest": self.pending_quest,
             "reputation": self.reputation,
+            "npc_relationships": self.npc_relationships,
+            "corpses": self.corpses,
             "history": self.history,
             "visited": list(self.visited),
             "looted_locations": list(self.looted_locations),
+            "first_shop_opened": self.first_shop_opened,
+            "status_effects": self.status_effects,
+            "companion": self.companion.to_dict() if self.companion else None,
+            "journal": self.journal.to_dict(),
+            "npc_memory": self.npc_memory.to_dict(),
+            "time": self.time.to_dict(),
+            "turn_count": self.turn_count,
         }
 
     @classmethod
     def from_dict(cls, data: dict):
+        from game.journal import Journal
+        from game.npc_memory import NPCMemory
+        from game.time_cycle import DayCycle
+        from game.companion import Companion
+
         p = cls.__new__(cls)
         p.name = data.get("name", "Ghost")
         p.class_id = data.get("class_id", "")
@@ -385,14 +487,33 @@ class Player:
             if s not in p.skills:
                 p.skills[s] = 0
         p.inventory = data.get("inventory", [])
-        p.equipped = data.get("equipped", {"weapon": None, "armor": None})
+        equipped = data.get("equipped", {})
+        new_equipped = {"weapon": None, "head": None, "body": None, "hands": None, "feet": None}
+        for k, v in equipped.items():
+            if k in new_equipped:
+                new_equipped[k] = v
+            elif k == "armor" and v:
+                item = get_item(v)
+                if item:
+                    new_equipped[item.get("slot", "body")] = v
+        p.equipped = new_equipped
         p.cyberware = data.get("cyberware", [])
         p.quests = data.get("quests", [])
         p.pending_quest = data.get("pending_quest", None)
         p.reputation = data.get("reputation", {})
+        p.npc_relationships = data.get("npc_relationships", {})
+        p.corpses = data.get("corpses", {})
         p.history = data.get("history", [])
         p.visited = set(data.get("visited", ["slums"]))
         p.looted_locations = set(data.get("looted_locations", []))
+        p.first_shop_opened = data.get("first_shop_opened", False)
+        p.status_effects = data.get("status_effects", [])
+        comp_data = data.get("companion")
+        p.companion = Companion.from_dict(comp_data) if comp_data else None
+        p.journal = Journal.from_dict(data.get("journal", {}))
+        p.npc_memory = NPCMemory.from_dict(data.get("npc_memory", {}))
+        p.time = DayCycle.from_dict(data.get("time", {}))
+        p.turn_count = data.get("turn_count", 0)
         p.in_combat = False
         p.current_enemy = None
         return p
